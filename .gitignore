@@ -1,0 +1,4 @@
+# Never commit real secrets or local backups
+.env
+*.bak-*
+settings.local.json
