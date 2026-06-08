@@ -185,12 +185,12 @@ This is the heavy path. Follow precisely.
 2. If verification passes:
    - Ensure the canonical `docs/<feature>/PLAN.md` (and `DECISIONS.md` / completion report) match the final state of the run, then have git-agent COMMIT_STEP those `docs/<feature>/` artifacts (root `/PLAN.md` is gitignored and is NOT committed).
    - Invoke git-agent with operation PUSH_BRANCH.
-   - Open a PR per the conventions in `.claude/PROJECT_PROFILE.md` §4 (if defined): invoke git-agent with operation CREATE_PR, supplying
+   - Open the change request (PR on GitHub / MR on GitLab — git-agent auto-detects the host) per the conventions in `.claude/PROJECT_PROFILE.md` §4 (if defined): invoke git-agent with operation CREATE_PR, supplying
      - title: a concise `<type>: <short summary>`; include the issue/ticket code from PROJECT_PROFILE.md §4 if that convention is defined.
      - summary_md: a concise Summary / Changes / Test plan you compose from the executed steps.
      - original_prompt: the COMPLETE verbatim initial task prompt the user gave for this task (do not trim or paraphrase).
-   - Report final summary to user: branch name, total steps, files changed, commit count, push status, the PR URL, effort mismatches (per EFFORT TAG HANDLING), and any multi-candidate steps with their winners and DECISION.md paths.
-   - STOP at the PR. Do NOT merge it. Merging into `main` is human-gated (Checkpoint 1) — the user must explicitly approve before any `gh pr merge`. Archiving the branch after merge is a separate human-gated step (Checkpoint 2). Surface both as next steps the user must approve; do not perform them yourself.
+   - Report final summary to user: branch name, total steps, files changed, commit count, push status, the PR/MR URL, effort mismatches (per EFFORT TAG HANDLING), and any multi-candidate steps with their winners and DECISION.md paths.
+   - STOP at the PR/MR. Do NOT merge it. Merging into `main` is human-gated (Checkpoint 1) — the user must explicitly approve before any merge (`gh pr merge` / `glab mr merge`). Archiving the branch after merge is a separate human-gated step (Checkpoint 2). Surface both as next steps the user must approve; do not perform them yourself.
 3. If verification fails:
    - Do NOT push.
    - Report failure with command output. Recommend a fix step or manual review.
@@ -283,7 +283,7 @@ ESCALATION RULES:
 - A fundamental capability gap or contradiction (a needed tool/approach is unavailable or impossible vs. the plan) → STOP and surface an explicit DECISION REQUEST to the user (expected vs. actual + options); NEVER silently degrade to a workaround.
 
 When all steps complete, verification passes, and push succeeds, write a final summary to the user including:
-- Branch name and PR URL
+- Branch name and PR/MR URL
 - Total steps executed (with breakdown of single-executor vs multi-candidate)
 - For each multi-candidate step: which letter won and one-line rationale
 - Paths to all DECISION.md files

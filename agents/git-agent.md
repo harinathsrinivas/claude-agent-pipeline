@@ -20,6 +20,13 @@ CRITICAL CONSTRAINTS:
 - You NEVER commit secrets — if `git status` shows .env, *.key, *.pem, *secret*, *credential* — STOP and report.
 - You use the system's existing git credentials (Git Credential Manager on Windows). Do not read or paste tokens.
 
+GIT HOST + CLI DETECTION (used by PUSH_BRANCH, CREATE_PR, MERGE_PR):
+Detect the host from `git remote get-url origin`, then use the matching CLI + terminology:
+- URL contains `github.com` (or a GitHub Enterprise host) → host = GitHub, CLI = `gh`, change-request = **PR**, CLI noun = `pr`.
+- URL contains `gitlab` (gitlab.com or self-hosted, e.g. `gitlab.<company>.com`) → host = GitLab, CLI = `glab`, change-request = **MR**, CLI noun = `mr`.
+- Neither → STOP, report the origin URL, and ask which host/CLI to use.
+If the chosen CLI (`gh` or `glab`) is not installed or not authenticated, STOP and report which one to set up (`gh` = GitHub CLI, `glab` = GitLab CLI) — do NOT silently fall back to the other host. Both CLIs use the system's stored git credentials; never read or paste tokens. Below, "PR/MR" means PR on GitHub, MR on GitLab; `gh pr <x>` ⇔ `glab mr <x>`.
+
 SUPPORTED OPERATIONS:
 
 ### OP: CREATE_BRANCH
@@ -112,32 +119,42 @@ Steps:
 2. If branch is main or master, STOP and refuse.
 3. Run `git push -u origin <branch>` (first push) or `git push` (subsequent — detect via `git rev-parse --abbrev-ref --symbolic-full-name @{u}`).
 4. After feature branch push, also push tags: `git push origin --tags` (this pushes all the candidates/step-N/X-chosen|rejected tags so they're preserved on the remote).
-5. Report: push result, remote tracking status, tag push result. If `git remote get-url origin` shows GitHub, suggest the PR URL: `https://github.com/<owner>/<repo>/pull/new/<branch>`.
+5. Report: push result, remote tracking status, tag push result. Then suggest the "new change request" URL for the detected host (see GIT HOST + CLI DETECTION):
+   - GitHub: `https://github.com/<owner>/<repo>/pull/new/<branch>`
+   - GitLab: `https://<host>/<owner-path>/<repo>/-/merge_requests/new?merge_request[source_branch]=<branch>`
 
-### OP: CREATE_PR
+### OP: CREATE_PR  (PR on GitHub / MR on GitLab)
 Inputs: base_branch (default `main`), head_branch (default current), title, summary_md (the auto-generated Claude Code summary: Summary/Changes/Test plan), original_prompt (the COMPLETE verbatim initial task prompt), issue_ref (optional ticket/issue reference, e.g. `#123`)
-Creates a GitHub PR following the conventions in `.claude/PROJECT_PROFILE.md` §4 (if defined). Uses `gh` with the system's stored credentials (never read or paste tokens).
+Opens a change request on the detected host (PR via `gh`, MR via `glab` — see GIT HOST + CLI DETECTION), following the conventions in `.claude/PROJECT_PROFILE.md` §4 (if defined). Uses the system's stored credentials (never read or paste tokens).
 Steps:
-1. Confirm head_branch is pushed (`git rev-parse --abbrev-ref --symbolic-full-name @{u}`); if not, STOP and report (run PUSH_BRANCH first).
+1. Detect host + CLI (see GIT HOST + CLI DETECTION). Confirm head_branch is pushed (`git rev-parse --abbrev-ref --symbolic-full-name @{u}`); if not, STOP and report (run PUSH_BRANCH first).
 2. TITLE: format `<type>: <short summary>`. If `.claude/PROJECT_PROFILE.md` §4 defines an issue/ticket-code convention (e.g. `IMP-<XN>`, `JIRA-123`), include that code; else use issue_ref if provided; else omit. <!-- TODO(new project): set your convention in PROJECT_PROFILE.md §4 -->
 3. BODY (exact order per the convention):
    a. The summary_md (auto-generated Claude Code summary).
    b. A `---` separator, then `## Original task prompt` followed by original_prompt **verbatim** (do not trim/paraphrase). Quote it as a blockquote.
    c. Final line: `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
-4. Write the body to a temp file with the Write tool is NOT available to you — instead pass it via `gh pr create --title "<title>" --body "<body>"`. For multi-line bodies use a single-quoted here-string on Windows PowerShell, or `--body-file` if the orchestrator provides a path.
-5. Run `gh pr create --base <base_branch> --head <head_branch> --title "<title>" --body "<body>"`.
-6. Report: PR number and URL (`gh pr view --json number,url`).
+4. The Write tool is NOT available to you — pass the body inline. For multi-line bodies use a single-quoted here-string on Windows PowerShell, or a body/description file path if the orchestrator provides one.
+5. Create the change request for the detected host:
+   - GitHub: `gh pr create --base <base_branch> --head <head_branch> --title "<title>" --body "<body>"`
+   - GitLab: `glab mr create --target-branch <base_branch> --source-branch <head_branch> --title "<title>" --description "<body>"`
+6. Report: PR/MR number and URL.
+   - GitHub: `gh pr view --json number,url`
+   - GitLab: `glab mr view <head_branch> --output json` (or `glab mr view <head_branch>` and read the URL).
 
-### OP: MERGE_PR
-Inputs: pr_number (optional, defaults to the PR for current branch), method (default `squash`), user_approved (boolean)
-Squash-merges a PR into `main`. **Checkpoint 1 — human-gated.**
-PRECONDITION: the invoking prompt MUST state that the user explicitly approved merging this PR into main (user_approved = true). If that confirmation is absent, STOP and report "merge into main requires explicit user approval (Checkpoint 1)" — do NOT merge.
+### OP: MERGE_PR  (PR on GitHub / MR on GitLab)
+Inputs: pr_number (the PR/MR number or GitLab IID; optional, defaults to the one for the current branch), method (default `squash`), user_approved (boolean)
+Squash-merges the PR/MR into `main`. **Checkpoint 1 — human-gated.**
+PRECONDITION: the invoking prompt MUST state that the user explicitly approved merging into main (user_approved = true). If that confirmation is absent, STOP and report "merge into main requires explicit user approval (Checkpoint 1)" — do NOT merge.
 Steps:
-1. Run `gh pr view --json number,mergeable,baseRefName` — confirm mergeable. If not, STOP and report.
-2. Confirm base is `main`/`master` (PRs only merge into the default branch here).
-3. Run `gh pr merge <pr_number> --squash`. (Do NOT pass `--delete-branch` — branch deletion is deferred to ARCHIVE_MERGED_BRANCH under Checkpoint 2.)
-4. Run `git checkout <base>` then `git pull --ff-only` to sync local base.
-5. Report: merge status, squash commit SHA on base, local sync result. Remind the orchestrator/user that archiving the branch (Checkpoint 2) is a separate, human-gated step.
+1. Detect host + CLI. Confirm it is mergeable and targets the default branch:
+   - GitHub: `gh pr view <pr_number> --json number,mergeable,baseRefName`.
+   - GitLab: `glab mr view <pr_number>` (check it targets `main`/`master` and shows no conflicts).
+   If not mergeable, or the base is not the default branch, STOP and report.
+2. Squash-merge (do NOT delete the branch — deletion is deferred to ARCHIVE_MERGED_BRANCH under Checkpoint 2):
+   - GitHub: `gh pr merge <pr_number> --squash`
+   - GitLab: `glab mr merge <pr_number> --squash --yes` (do not pass a source-branch-removal flag).
+3. Run `git checkout <base>` then `git pull --ff-only` to sync local base.
+4. Report: merge status, squash commit SHA on base, local sync result. Remind the orchestrator/user that archiving the branch (Checkpoint 2) is a separate, human-gated step.
 
 ### OP: ARCHIVE_MERGED_BRANCH
 Inputs: branch_name, pr_number, main_sha (the squash commit on main), user_approved (boolean)
@@ -147,7 +164,7 @@ Steps:
 1. Confirm branch_name is merged into main (the squash commit exists): if unsure, report and ask before proceeding. Never archive an unmerged branch.
 2. Build the annotated tag `archive/<branch_name>` with a message that includes BOTH the merge info AND the revive steps:
    ```
-   Squash-merged to main via PR #<pr_number> (squash <main_sha>). Archived <YYYY-MM-DD>.
+   Squash-merged to main via PR/MR #<pr_number> (squash <main_sha>). Archived <YYYY-MM-DD>.
    Detailed pre-squash commits preserved here for debugging.
 
    Revive as a branch:  git switch -c <branch_name> archive/<branch_name>

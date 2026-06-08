@@ -35,8 +35,9 @@ section numbers/headings stable — the agents reference them as "§1 … §7".
   vs IDE; flaky default time-zone/locale; H2-vs-prod SQL dialect drift. (Windows) path separators /
   case-insensitive FS. Delete if n/a.>
 
-## §4. Git & PR conventions
-- Branch / commit / PR rules doc (if any): <TODO: e.g. `docs/git-pr-conventions.md`, or "none">
+## §4. Git & PR/MR conventions
+- Git host / change-request type: <TODO: GitHub→PR or GitLab→MR. The git-agent auto-detects this from `origin` and uses `gh`/PR or `glab`/MR — just make sure that CLI is installed & authenticated.>
+- Branch / commit / PR-or-MR rules doc (if any): <TODO: e.g. `docs/git-pr-conventions.md`, or "none">
 - **Issue/ticket code in PR title?** <TODO: e.g. `IMP-<XN>` (custom), `JIRA-123`, GitHub `#123`, or "none">
   - If yes, where to look it up: <TODO: e.g. `improvements_tier*.md`, Jira board, issue link>
   - Title format: <TODO: e.g. `<type>: <short summary> — <CODE>`>
