@@ -16,14 +16,14 @@ Follow the conventions in `.claude/PROJECT_PROFILE.md` §4:
 4. Branch archival — GitHub deletes the branch after squash-merge; no manual step.
 
 ## Agentic workflow
-Non-trivial changes go through the multi-agent pipeline in `~/.claude/agents/`
+Non-trivial changes go through the multi-agent pipeline from the `claude-agent-pipeline` plugin
 (planner → orchestrator → executors, with judge and git-agent). Effort tiers:
 planner/orchestrator/architect/judge = opus/high · executor-opus = opus/max ·
 executor-sonnet = sonnet/medium · executor-haiku & git-agent = haiku/low.
 
 **Execution model — top-level orchestration.** A Claude Code sub-agent cannot spawn sub-agents
 (nesting depth = 1). Run the pipeline from the **main session**, following
-`~/.claude/agents/orchestrator.md` as a playbook and spawning the executor / judge / git
+the `orchestrator` agent's definition as a playbook and spawning the executor / judge / git
 sub-agents yourself. **Do NOT launch `orchestrator` via `Task`** — it would hit the depth limit
 and silently fall back to running everything inline.
 

@@ -1,8 +1,0 @@
-{
-  "model": "opus",
-  "effortLevel": "xhigh",
-  "skipDangerousModePermissionPrompt": true,
-  "theme": "auto",
-  "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": true
-}

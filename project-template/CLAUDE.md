@@ -21,7 +21,7 @@ ones that apply, per §4):
    `archive/<branch>` tag (merge info + revive steps), push it, then delete the branch. <TODO: keep or relax>
 
 ## Agentic workflow
-Non-trivial changes go through the multi-agent pipeline in `~/.claude/agents/`
+Non-trivial changes go through the multi-agent pipeline from the `claude-agent-pipeline` plugin
 (planner → orchestrator → executors, with git-agent and judge). Effort tiers (Opus 4.8):
 planner/orchestrator/architect/judge = opus/high · executor-opus = opus/max ·
 executor-sonnet = sonnet/medium · executor-haiku & git-agent = haiku/low.
@@ -29,7 +29,7 @@ See `AGENT_WORKFLOW_NOTES.md`. <TODO: if you keep an ARCHITECTURE.md, reference 
 
 **Execution model — top-level orchestration.** A Claude Code sub-agent cannot spawn sub-agents
 (nesting depth = 1), and `orchestrator` is otherwise a sub-agent. So the pipeline runs in the
-**main (top-level) session**: it reads `PLAN.md`, follows `~/.claude/agents/orchestrator.md` as a
+**main (top-level) session**: it reads `PLAN.md`, follows the `orchestrator` agent's definition as a
 *playbook*, and spawns the executor / candidate / judge / git sub-agents **itself** (depth-1 from
 the main session works), committing between steps and pausing at the human gates. **Do NOT launch
 the `orchestrator` agent via `Task` to execute a plan** — it would hit the depth limit and silently

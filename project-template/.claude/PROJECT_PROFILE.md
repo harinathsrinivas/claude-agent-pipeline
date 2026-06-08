@@ -1,8 +1,8 @@
 # Project Profile — <TODO: PROJECT NAME>
 
-**Single source of project-specific context for the agent pipeline.** The global agents in
-`~/.claude/agents/` are generic; they read THIS file (by section number) for anything that
-differs between projects. On a new project you edit ONLY this file and `CLAUDE.md`.
+**Single source of project-specific context for the agent pipeline.** The agents in the
+`claude-agent-pipeline` plugin are generic; they read THIS file (by section number) for anything
+that differs between projects. On a new project you edit ONLY this file and `CLAUDE.md`.
 
 How to use: fill every `TODO:` below. Delete any section that doesn't apply (the agents treat
 a missing section as "not defined" and fall back to sensible generic behavior). Keep the

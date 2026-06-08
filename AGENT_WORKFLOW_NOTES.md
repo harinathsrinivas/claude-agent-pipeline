@@ -1,6 +1,6 @@
 # Agent Workflow Notes
 
-Notes on this multi-agent workflow (the agents in `~/.claude/agents/`). Not an agent definition — kept out of `agents/` so it isn't scanned as one.
+Notes on this multi-agent workflow (the agents in the `claude-agent-pipeline` plugin). Not an agent definition — kept out of `agents/` so it isn't scanned as one.
 
 ## Opus 4.8 + effort migration (2026-05-30)
 
@@ -40,7 +40,7 @@ Opus 4.8 added **dynamic workflows** — a session plans a task then spins up *h
 
 The depth-1 limit was confirmed in practice across multiple runs: a spawned `orchestrator` found `Task` unavailable and silently fell back to running every step inline (noting it only in `STATUS.md`). Two changes:
 
-1. **Execution model = top-level orchestration.** The pipeline runs in the MAIN session, not as a spawned `orchestrator` sub-agent. The main session reads `PLAN.md` and follows `.claude/agents/orchestrator.md` as a *playbook*, spawning the executor / candidate / judge / git sub-agents itself (depth-1 from the main session works), committing between steps, and pausing at the human gates. Do NOT launch `orchestrator` via `Task` to execute a plan — that reproduces the depth-1 problem. `orchestrator.md` is retained as the canonical playbook + spawn-context-packaging spec.
+1. **Execution model = top-level orchestration.** The pipeline runs in the MAIN session, not as a spawned `orchestrator` sub-agent. The main session reads `PLAN.md` and follows the `orchestrator` agent's definition as a *playbook*, spawning the executor / candidate / judge / git sub-agents itself (depth-1 from the main session works), committing between steps, and pausing at the human gates. Do NOT launch `orchestrator` via `Task` to execute a plan — that reproduces the depth-1 problem. `orchestrator.md` is retained as the canonical playbook + spawn-context-packaging spec.
 
 2. **No silent handling of fundamental contradictions.** If any agent (or the main session) hits a fundamental capability gap or contradiction vs. the plan — a needed tool is unavailable, a planned approach is impossible, an instruction conflicts with a hard runtime limit — it must STOP and surface an explicit DECISION REQUEST to the user (what was expected, what differs, the options) instead of quietly degrading. The earlier inline fallback is exactly what this forbids. Mirrored in `CLAUDE.md`.
 
