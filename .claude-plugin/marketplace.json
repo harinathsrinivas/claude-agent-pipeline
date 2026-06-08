@@ -1,7 +1,7 @@
 {
   "name": "claude-agent-pipeline",
   "owner": {
-    "name": "harinathsrinivas"
+    "name": "srisrisri"
   },
   "metadata": {
     "description": "Generic, language-agnostic multi-agent coding pipeline for Claude Code.",
@@ -14,7 +14,7 @@
       "description": "Multi-agent pipeline (planner, orchestrator, executors, judge, git-agent, architect) plus /setup and /init-project commands. Project-specific knobs live in one .claude/PROJECT_PROFILE.md.",
       "version": "1.0.0",
       "author": {
-        "name": "harinathsrinivas"
+        "name": "srisrisri"
       },
       "keywords": ["agents", "pipeline", "workflow", "planner", "orchestrator", "judge"],
       "category": "workflow"

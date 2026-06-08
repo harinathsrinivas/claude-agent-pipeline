@@ -3,10 +3,10 @@
   "description": "Generic, language-agnostic multi-agent pipeline (planner, orchestrator, executors, judge, git-agent, architect) with /setup and /init-project commands. Per-project specifics live in one .claude/PROJECT_PROFILE.md.",
   "version": "1.0.0",
   "author": {
-    "name": "harinathsrinivas"
+    "name": "srisrisri"
   },
-  "homepage": "https://github.com/harinathsrinivas/claude-agent-pipeline",
-  "repository": "https://github.com/harinathsrinivas/claude-agent-pipeline",
+  "homepage": "https://gitlab.xyz.com/rrr/eng/claude-code-config/-/tree/multi-agent-workflow",
+  "repository": "https://gitlab.xyz.com/rrr/eng/claude-code-config",
   "license": "MIT",
   "keywords": ["agents", "pipeline", "workflow", "planner", "orchestrator", "judge", "architect"]
 }

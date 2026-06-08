@@ -11,7 +11,7 @@ fill in (`.claude/PROJECT_PROFILE.md`). Examples lead with Java/Spring.
 In any Claude Code session:
 
 ```text
-/plugin marketplace add harinathsrinivas/claude-agent-pipeline
+/plugin marketplace add https://gitlab.xyz.com/rrr/eng/claude-code-config.git#multi-agent-workflow
 /plugin install agent-pipeline@claude-agent-pipeline
 /agent-pipeline:setup          ← optional: applies recommended global settings (Opus / xhigh)
 ```
@@ -21,7 +21,7 @@ The 8 agents are now available **globally, in every project** — run `/agents` 
 `executor-haiku`, `git-agent`).
 
 ### …or just tell Claude
-> "Add the marketplace `harinathsrinivas/claude-agent-pipeline`, install the `agent-pipeline` plugin, then run `/agent-pipeline:setup`."
+> "Add the marketplace `https://gitlab.xyz.com/rrr/eng/claude-code-config.git#multi-agent-workflow`, install the `agent-pipeline` plugin, then run `/agent-pipeline:setup`."
 
 Claude Code runs the `/plugin` steps and the setup for you. After installing, run `/reload-plugins`
 (or restart) if the agents/commands don't appear immediately.
